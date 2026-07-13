@@ -1,0 +1,50 @@
+{
+  "id": "nimble-monster-builder",
+  "title": "Nimble Monster Builder",
+  "description": "Construit et scale des monstres pour le système Nimble à partir des tables du Guide du Maître.",
+  "version": "0.1.0",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13"
+  },
+  "authors": [
+    {
+      "name": "genkishipro"
+    }
+  ],
+  "esmodules": [
+    "scripts/module.mjs"
+  ],
+  "styles": [
+    "styles/monster-builder.css"
+  ],
+  "languages": [
+    {
+      "lang": "fr",
+      "name": "Français",
+      "path": "lang/fr.json"
+    },
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "relationships": {
+    "systems": [
+      {
+        "id": "nimble",
+        "type": "system",
+        "compatibility": {
+          "minimum": "0.8.7"
+        }
+      }
+    ]
+  },
+  "flags": {
+    "nimble-monster-builder": {
+      "recipeFlag": "recipe",
+      "generatedFlag": "generated"
+    }
+  }
+}
