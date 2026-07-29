@@ -9,7 +9,7 @@ import { ARMOR_HP_COLUMN, SIZE_TO_TOKEN_DIMENSIONS } from "../data/constants.mjs
 import { standardRowByLevel, standardRowByOrder } from "../data/standard-table.mjs";
 import { legendaryRowByLevel, LEGENDARY_TABLE } from "../data/legendary-table.mjs";
 import { suggestedMinionDie } from "../data/minion-dice.mjs";
-import { buildFormula, formatFormula, averageOfFormula } from "./formula.mjs";
+import { buildFormula, formatFormula, averageOfFormula, realizeFormula } from "./formula.mjs";
 
 /**
  * @typedef {object} DeriveInput
@@ -169,26 +169,6 @@ function deriveLegendary(input) {
 }
 
 /* ------------------------------- Helpers -------------------------------- */
-
-/**
- * Réalise une formule canonique {dice, die, bonus} pour la taille de dé voulue.
- * - dé identique au dé natif de la table  -> formule EXACTE (bonus imprimé conservé).
- * - dé différent -> on préserve la moyenne via buildFormula.
- * @returns {{diceCount:number, dieSize:number, bonus:number, formula:string, average:number, target:number, warning:(string|null)}}
- */
-function realizeFormula(canonical, dieSize, warnings, label) {
-  const target = averageOfFormula(canonical.dice, canonical.die, canonical.bonus);
-  if (dieSize === canonical.die) {
-    return {
-      diceCount: canonical.dice, dieSize, bonus: canonical.bonus,
-      formula: formatFormula(canonical.dice, dieSize, canonical.bonus),
-      average: target, target, warning: null
-    };
-  }
-  const f = buildFormula({ target, dieSize, preferredDice: canonical.dice });
-  if (f.warning && warnings) warnings.push(`${label} : ${f.warning}`);
-  return f;
-}
 
 function emptyStats(input, warnings) {
   return {

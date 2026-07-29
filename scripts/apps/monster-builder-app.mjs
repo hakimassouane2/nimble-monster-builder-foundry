@@ -10,6 +10,7 @@ import {
 import { ROLE_ORDER, ROLE_PRESETS } from "../data/role-presets.mjs";
 import { TEMPLATE_ORDER, getTemplate, resolveAbilityOffsets } from "../data/effect-templates.mjs";
 import { defaultRecipe, recipeFromRole, normalizeRecipe, readRecipe, scaledLevel } from "../core/recipe.mjs";
+import { scalingRefsEnabled } from "../features/level-scaling.mjs";
 import { deriveResolved, createMonster, applyRecipe } from "../core/builder.mjs";
 import { STANDARD_TABLE } from "../data/standard-table.mjs";
 
@@ -36,7 +37,9 @@ export class MonsterBuilderApp extends HandlebarsApplicationMixin(ApplicationV2)
     this.actor = options.actor ?? null;
     this.recipe = options.recipe
       ?? (this.actor && readRecipe(this.actor))
-      ?? defaultRecipe();
+      // Une recette neuve suit le réglage du monde ; une recette déjà existante
+      // garde son propre choix, pour ne pas transformer un monstre figé.
+      ?? defaultRecipe({ useScalingRefs: scalingRefsEnabled() });
     this.recipe = normalizeRecipe(this.recipe);
   }
 
@@ -157,7 +160,9 @@ export class MonsterBuilderApp extends HandlebarsApplicationMixin(ApplicationV2)
         level: e.level ?? prev.level,
         size: e.size ?? prev.size,
         damageType: e.damageType ?? prev.damageType,
-        creatureType: e.creatureType ?? prev.creatureType
+        creatureType: e.creatureType ?? prev.creatureType,
+        // Le preset de rôle ne doit pas décider à la place de l'utilisateur.
+        useScalingRefs: prev.useScalingRefs
       }));
     }
 

@@ -16,11 +16,9 @@
   "NMB.CostLevel": "+{n} level (difficulty)",
   "NMB.NoAbilities": "No abilities. Use the menu above to add one.",
   "NMB.AddAbilityPlaceholder": "＋ Add an ability…",
-
   "NMB.Section.config": "Configuration",
   "NMB.Section.preview": "Preview",
   "NMB.Section.abilities": "Abilities",
-
   "NMB.Field.name": "Name",
   "NMB.Field.type": "Type",
   "NMB.Field.role": "Role",
@@ -37,41 +35,32 @@
   "NMB.Field.flunky": "Flunky (never crits)",
   "NMB.Field.legendaryActions": "Optional legendary actions",
   "NMB.Field.payWith": "Paid with",
-
   "NMB.Btn.scaleLevel": "Level",
-
   "NMB.Stat.hp": "HP",
   "NMB.Stat.saveDC": "Save DC",
   "NMB.Stat.damageBudget": "Damage budget",
   "NMB.Stat.lastStand": "Last Stand",
-
   "NMB.Type.npc": "NPC / Standard",
   "NMB.Type.minion": "Minion",
   "NMB.Type.soloMonster": "Legendary (Solo)",
-
   "NMB.Mode.weakStrong": "Weak + Strong",
   "NMB.Mode.single": "Single",
   "NMB.Mode.multi": "Multiattack",
-
   "NMB.AtkType.": "Melee",
   "NMB.AtkType.reach": "Reach",
   "NMB.AtkType.range": "Ranged",
-
   "NMB.Pay.dmg": "Damage",
   "NMB.Pay.hp": "HP",
   "NMB.Pay.level": "Level",
-
   "NMB.Armor.none": "Unarmored",
   "NMB.Armor.medium": "Medium (M)",
   "NMB.Armor.heavy": "Heavy (H)",
-
   "NMB.Size.tiny": "Tiny",
   "NMB.Size.small": "Small",
   "NMB.Size.medium": "Medium",
   "NMB.Size.large": "Large",
   "NMB.Size.huge": "Huge",
   "NMB.Size.gargantuan": "Gargantuan",
-
   "NMB.Dmg.acid": "Acid",
   "NMB.Dmg.bludgeoning": "Bludgeoning",
   "NMB.Dmg.cold": "Cold",
@@ -85,7 +74,6 @@
   "NMB.Dmg.radiant": "Radiant",
   "NMB.Dmg.slashing": "Slashing",
   "NMB.Dmg.thunder": "Thunder",
-
   "NMB.Role.normal": "Normal monster",
   "NMB.Role.melee": "Melee",
   "NMB.Role.ranged": "Ranged",
@@ -96,7 +84,6 @@
   "NMB.Role.aoe": "Area of effect",
   "NMB.Role.summoner": "Summoner",
   "NMB.Role.ambusher": "Ambusher",
-
   "NMB.Ability.push": "Push (N spaces)",
   "NMB.Ability.knockProne": "Knock Prone",
   "NMB.Ability.grapple": "Grapple (on hit)",
@@ -115,5 +102,9 @@
   "NMB.Ability.resistance": "Resistance (type)",
   "NMB.Ability.immunity": "Immunity (type)",
   "NMB.Ability.vulnerability": "Vulnerability (type)",
-  "NMB.Ability.reach": "Reach (N spaces)"
+  "NMB.Ability.reach": "Reach (N spaces)",
+  "NMB.Settings.rescaleHp.name": "Rescale hit points on level change",
+  "NMB.Settings.rescaleHp.hint": "When a monster's level changes, its maximum hit points are read from the table and its current hit points keep the same ratio. Uncheck to adjust hit points by hand.",
+  "NMB.Settings.scalingRefs.name": "Build scaling monsters",
+  "NMB.Settings.scalingRefs.hint": "Built monsters carry references (@strongDamage, @dc) instead of frozen values, so they follow their level without being rebuilt. Monsters created this way need this module to be played."
 }

@@ -1,4 +1,5 @@
 // Test P3 : catalogue d'effets + coût. node tests/abilities.selftest.mjs
+import { scalingRefsForActor } from "../scripts/core/scaling.mjs";
 import { recipeToCreateData } from "../scripts/core/builder.mjs";
 import { defaultRecipe } from "../scripts/core/recipe.mjs";
 import { resolveAbilityOffsets } from "../scripts/data/effect-templates.mjs";
@@ -27,8 +28,25 @@ check("HP niv3 M -1 ligne = 27", d1.system.attributes.hp.max, 27);
 // attaque utilitaire = faible ; dégâts -1 ligne => niv2 => faible 1d8+3, forte 2d8+4
 const weak = bySlot(d1.items, "attack:weak");
 const strong = bySlot(d1.items, "attack:strong");
-check("faible formule (dmg -1)", eff(weak)[0].formula, "1d8+3");
-check("forte formule (dmg -1)", eff(strong)[0].formula, "2d8+4");
+// En mode référence, le décalage n'est plus figé dans la formule : il est porté
+// par la recette (dmgLineOffset) et appliqué à la résolution du jet.
+check("faible formule (référence)", eff(weak)[0].formula, "@weakDamage");
+check("forte formule (référence)", eff(strong)[0].formula, "@strongDamage");
+// Bout en bout : la référence, résolue depuis la recette telle qu'elle est
+// stockée sur l'acteur, doit retomber sur la formule du mode figé. Le coût des
+// capacités n'étant pas persisté, il doit être recalculé à la résolution.
+const fakeActor = {
+  type: r1.monsterType,
+  system: { details: { level: r1.level }, attributes: { armor: r1.armor, hp: { max: 27 } } },
+  getFlag: (scope, key) => (scope === "nimble-monster-builder" && key === "recipe" ? r1 : undefined),
+};
+check("référence résolue = valeur figée (faible)", scalingRefsForActor(fakeActor).weakDamage, "1d8+3");
+check("référence résolue = valeur figée (forte)", scalingRefsForActor(fakeActor).strongDamage, "2d8+4");
+
+// Mêmes offsets, mais figés dans les items : c'est là qu'on vérifie les valeurs.
+const d1Frozen = recipeToCreateData({ ...r1, useScalingRefs: false }).data;
+check("faible formule figée (dmg -1)", eff(bySlot(d1Frozen.items, "attack:weak"))[0].formula, "1d8+3");
+check("forte formule figée (dmg -1)", eff(bySlot(d1Frozen.items, "attack:strong"))[0].formula, "2d8+4");
 // riders sur la faible : push (automatic note) + grapple (on.hit condition)
 check("faible : 2 nœuds racine (dmg + push)", eff(weak).length, 2);
 check("push = note automatique", eff(weak)[1].type, "note");

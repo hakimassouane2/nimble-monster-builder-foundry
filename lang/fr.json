@@ -16,11 +16,9 @@
   "NMB.CostLevel": "+{n} niveau (difficulté)",
   "NMB.NoAbilities": "Aucune capacité. Utilise le menu ci-dessus pour en ajouter.",
   "NMB.AddAbilityPlaceholder": "＋ Ajouter une capacité…",
-
   "NMB.Section.config": "Configuration",
   "NMB.Section.preview": "Aperçu",
   "NMB.Section.abilities": "Capacités",
-
   "NMB.Field.name": "Nom",
   "NMB.Field.type": "Type",
   "NMB.Field.role": "Rôle",
@@ -37,41 +35,32 @@
   "NMB.Field.flunky": "Flunky (jamais de crit)",
   "NMB.Field.legendaryActions": "Actions légendaires optionnelles",
   "NMB.Field.payWith": "Payé sur",
-
   "NMB.Btn.scaleLevel": "Niveau",
-
   "NMB.Stat.hp": "PV",
   "NMB.Stat.saveDC": "Save DC",
   "NMB.Stat.damageBudget": "Budget dégâts",
   "NMB.Stat.lastStand": "Last Stand",
-
   "NMB.Type.npc": "PNJ / Standard",
   "NMB.Type.minion": "Minion",
   "NMB.Type.soloMonster": "Légendaire (Solo)",
-
   "NMB.Mode.weakStrong": "Faible + Forte",
   "NMB.Mode.single": "Simple",
   "NMB.Mode.multi": "Multi-attaque",
-
   "NMB.AtkType.": "Mêlée",
   "NMB.AtkType.reach": "Allonge",
   "NMB.AtkType.range": "Distance",
-
   "NMB.Pay.dmg": "Dégâts",
   "NMB.Pay.hp": "PV",
   "NMB.Pay.level": "Niveau",
-
   "NMB.Armor.none": "Sans armure",
   "NMB.Armor.medium": "Moyenne (M)",
   "NMB.Armor.heavy": "Lourde (H)",
-
   "NMB.Size.tiny": "Très petit",
   "NMB.Size.small": "Petit",
   "NMB.Size.medium": "Moyen",
   "NMB.Size.large": "Grand",
   "NMB.Size.huge": "Énorme",
   "NMB.Size.gargantuan": "Gigantesque",
-
   "NMB.Dmg.acid": "Acide",
   "NMB.Dmg.bludgeoning": "Contondant",
   "NMB.Dmg.cold": "Froid",
@@ -85,7 +74,6 @@
   "NMB.Dmg.radiant": "Radiant",
   "NMB.Dmg.slashing": "Tranchant",
   "NMB.Dmg.thunder": "Tonnerre",
-
   "NMB.Role.normal": "Monstre normal",
   "NMB.Role.melee": "Mêlée",
   "NMB.Role.ranged": "Distance",
@@ -96,7 +84,6 @@
   "NMB.Role.aoe": "Zone d'effet",
   "NMB.Role.summoner": "Invocateur",
   "NMB.Role.ambusher": "Embusqueur",
-
   "NMB.Ability.push": "Pousse (N cases)",
   "NMB.Ability.knockProne": "Renverse (À terre)",
   "NMB.Ability.grapple": "Agrippe (au toucher)",
@@ -115,5 +102,9 @@
   "NMB.Ability.resistance": "Résistance (type)",
   "NMB.Ability.immunity": "Immunité (type)",
   "NMB.Ability.vulnerability": "Vulnérabilité (type)",
-  "NMB.Ability.reach": "Allonge (N cases)"
+  "NMB.Ability.reach": "Allonge (N cases)",
+  "NMB.Settings.rescaleHp.name": "Recalculer les PV au changement de niveau",
+  "NMB.Settings.rescaleHp.hint": "Quand le niveau d'un monstre change, ses PV maximum sont repris dans la table et ses PV courants conservent le même ratio. Décocher pour ajuster les PV à la main.",
+  "NMB.Settings.scalingRefs.name": "Générer des monstres évolutifs",
+  "NMB.Settings.scalingRefs.hint": "Les monstres construits portent des références (@strongDamage, @dc) au lieu de valeurs figées : ils suivent leur niveau sans être reconstruits. Les monstres ainsi créés ont besoin de ce module pour être joués."
 }

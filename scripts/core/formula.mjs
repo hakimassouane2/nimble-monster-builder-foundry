@@ -73,6 +73,31 @@ export function buildFormula({ target, dieSize, preferredDice = 1, noBonus = fal
 }
 
 /**
+ * Réalise une formule canonique {dice, die, bonus} pour la taille de dé voulue.
+ * - dé identique au dé natif de la table  -> formule EXACTE (bonus imprimé conservé).
+ * - dé différent -> on préserve la moyenne via buildFormula.
+ *
+ * @param {{dice:number, die:number, bonus:number}} canonical
+ * @param {number} dieSize
+ * @param {string[]} [warnings] Collecteur optionnel d'avertissements.
+ * @param {string} [label]      Préfixe des avertissements collectés.
+ * @returns {{diceCount:number, dieSize:number, bonus:number, formula:string, average:number, target:number, warning:(string|null)}}
+ */
+export function realizeFormula(canonical, dieSize, warnings, label) {
+  const target = averageOfFormula(canonical.dice, canonical.die, canonical.bonus);
+  if (dieSize === canonical.die) {
+    return {
+      diceCount: canonical.dice, dieSize, bonus: canonical.bonus,
+      formula: formatFormula(canonical.dice, dieSize, canonical.bonus),
+      average: target, target, warning: null
+    };
+  }
+  const f = buildFormula({ target, dieSize, preferredDice: canonical.dice });
+  if (f.warning && warnings) warnings.push(`${label} : ${f.warning}`);
+  return f;
+}
+
+/**
  * Répartit un budget total de dégâts entre plusieurs attaques, aussi équitablement
  * que possible. Retourne un tableau de cibles (moyennes) par attaque.
  * @param {number} total

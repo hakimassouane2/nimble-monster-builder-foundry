@@ -16,9 +16,25 @@ import { defaultRecipe, recipeFromRole, normalizeRecipe, readRecipe } from "./co
 import { EFFECT_TEMPLATES, TEMPLATE_ORDER, getTemplate, resolveAbilityOffsets } from "./data/effect-templates.mjs";
 import { MonsterBuilderApp } from "./apps/monster-builder-app.mjs";
 import { MONSTER_TYPES } from "./data/constants.mjs";
+import { scalingRefs, scalingRefsForActor, scalingInputFromActor, scalingRefKeys } from "./core/scaling.mjs";
+import { registerScalingRefs } from "./features/scaling-refs.mjs";
+import { registerScalingEnricher, resolveScalingRef } from "./features/scaling-enricher.mjs";
+import {
+  registerLevelScaling, computeScaledHp, scaledHpForLevel, scalingRefsEnabled
+} from "./features/level-scaling.mjs";
 
 Hooks.once("init", () => {
   console.log(`${MODULE_ID} | init`);
+  registerScalingEnricher();
+  // Réglages et hook de document : aucune dépendance au système, et Foundry
+  // attend que les settings soient déclarés dès l'init.
+  registerLevelScaling();
+});
+
+// L'enveloppe doit être posée APRÈS que le système ait installé sa classe
+// d'acteur (hook init du système), d'où setup plutôt que init.
+Hooks.once("setup", () => {
+  registerScalingRefs();
 });
 
 Hooks.once("ready", () => {
@@ -45,6 +61,11 @@ Hooks.once("ready", () => {
       deriveResolved,
       // catalogue d'effets
       effects: { EFFECT_TEMPLATES, TEMPLATE_ORDER, getTemplate, resolveAbilityOffsets },
+      // références de scaling (@strongDamage, @dc, @level...)
+      scaling: {
+        scalingRefs, scalingRefsForActor, scalingInputFromActor, scalingRefKeys,
+        resolveScalingRef, computeScaledHp, scaledHpForLevel, scalingRefsEnabled
+      },
       // UI
       MonsterBuilderApp,
       open: (actor = null) => new MonsterBuilderApp({ actor }).render(true)

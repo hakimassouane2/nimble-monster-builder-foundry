@@ -35,6 +35,10 @@ export function defaultRecipe(overrides = {}) {
     abilities: [],              // [{ templateId, params, payWith }] — rempli en P3
     hpLineOffset: 0,            // décalage de lignes HP (mix & match + coût abilities)
     dmgLineOffset: 0,           // décalage de lignes dégâts
+    // true  : les items générés portent des références (@strongDamage, @dc) et
+    //         suivent donc le niveau du monstre sans être régénérés ;
+    // false : valeurs figées, le monstre reste lisible sans le module.
+    useScalingRefs: true,
     ...overrides
   };
 }
@@ -72,6 +76,7 @@ export function normalizeRecipe(partial) {
   if (r.monsterType === "minion") r.isFlunky = false; // pas de flunky sur minion
   if (r.monsterType === "soloMonster") r.isFlunky = false;
   r.legendaryActions = r.legendaryActions !== false;
+  r.useScalingRefs = r.useScalingRefs !== false;
   if (!Array.isArray(r.abilities)) r.abilities = [];
   return r;
 }

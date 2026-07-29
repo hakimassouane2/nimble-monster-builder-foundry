@@ -98,3 +98,11 @@
   .nmb-stat { background: rgba(255, 255, 255, 0.06); }
   .nmb-warnings { color: #ff9b7a; }
 }
+
+/* Références de scaling résolues dans les descriptions (@dc, @strongDamage...).
+   Soulignement pointillé : la valeur affichée suit le niveau du monstre, elle
+   n'est pas écrite en dur dans la capacité. */
+.nimble-scaling-ref {
+  border-bottom: 1px dotted currentColor;
+  cursor: help;
+}

@@ -14,6 +14,7 @@ import { deriveStats } from "./derive.mjs";
 import { damageNode, assembleEffects, savingThrowNode, conditionNode, textNode } from "./effect-tree.mjs";
 import { buildStatblock } from "./statblock.mjs";
 import { normalizeRecipe, recipeFlagData, scaledLevel } from "./recipe.mjs";
+import { computeScaledHp } from "./scaling.mjs";
 import { randomID } from "./ids.mjs";
 
 const DEFAULT_IMG = "icons/svg/mystery-man.svg";
@@ -26,14 +27,44 @@ function defaultSavingThrows() {
   return out;
 }
 
+/**
+ * Référence de dégâts correspondant à une attaque générée. Les clés du builder
+ * (weak/strong, small/big, attack, attackN) sont traduites vers la nomenclature
+ * commune des références, pour que le monstre suive son niveau tout seul.
+ */
+const ATTACK_KEY_TO_REF = {
+  strong: "@strongDamage",
+  big: "@strongDamage",
+  weak: "@weakDamage",
+  small: "@weakDamage"
+};
+
+function damageRefForAttack(recipe, attack) {
+  if (recipe.monsterType === "minion") return "@attackDamage";
+  if (ATTACK_KEY_TO_REF[attack.key]) return ATTACK_KEY_TO_REF[attack.key];
+  // Mode "multi" : des attaques égales, toutes calées sur la colonne faible.
+  if (/^attack\d+$/.test(attack.key)) return "@weakDamage";
+  return "@strongDamage";
+}
+
+/** Formule à écrire dans un item : référence dynamique ou valeur figée. */
+function damageValue(recipe, attack) {
+  return recipe.useScalingRefs ? damageRefForAttack(recipe, attack) : attack.formula.formula;
+}
+
 /** Contexte partagé passé aux gabarits d'effets. */
 function buildCtx(recipe, stats) {
   const find = (...keys) => stats.attacks.find((a) => keys.includes(a.key)) ?? stats.attacks[0];
+  const strong = find("strong", "attack", "big");
+  const weak = find("weak", "small");
+
   return {
     damageType: recipe.damageType,
-    saveDC: stats.saveDC,
-    strongFormula: find("strong", "attack", "big")?.formula.formula,
-    weakFormula: find("weak", "small")?.formula.formula,
+    // Les gabarits lisent ces trois valeurs sans savoir si elles sont figées ou
+    // dynamiques : la bascule se fait ici, une fois pour toutes.
+    saveDC: recipe.useScalingRefs ? "@dc" : stats.saveDC,
+    strongFormula: strong ? damageValue(recipe, strong) : undefined,
+    weakFormula: weak ? damageValue(recipe, weak) : undefined,
     stats, recipe
   };
 }
@@ -75,12 +106,21 @@ function attackIcon(recipe, attack) {
   return DEFAULT_FEATURE_ICONS.action;
 }
 
-/** Description auto d'une attaque, mentionnant ses dégâts. */
+/**
+ * Description auto d'une attaque, mentionnant ses dégâts.
+ * En mode référence la moyenne est omise : elle changerait à chaque niveau, et
+ * l'enricher n'affiche que la formule résolue.
+ */
 function buildAttackDescription(recipe, attack, targeting) {
   const dmg = damageLabelFR(recipe.damageType);
   const attackType = targeting?.attackType ?? recipe.attackType;
   const distance = targeting?.distance ?? recipe.distance;
   const range = rangeSuffixFR(attackType, distance);
+
+  if (recipe.useScalingRefs) {
+    return `<p>Inflige <strong>${damageRefForAttack(recipe, attack)}</strong> dégâts ${dmg}${range}.</p>`;
+  }
+
   const avg = fmtAverage(attack.formula.average);
   return `<p>Inflige <strong>${attack.formula.formula}</strong> (${avg}) dégâts ${dmg}${range}.</p>`;
 }
@@ -89,7 +129,7 @@ function buildAttackDescription(recipe, attack, targeting) {
 function buildActionItem(recipe, attack, { riders = null, targeting = null } = {}) {
   const canCrit = attack.canCrit !== false && !(recipe.monsterType === "npc" && recipe.isFlunky);
   const node = damageNode({
-    formula: attack.formula.formula,
+    formula: damageValue(recipe, attack),
     damageType: recipe.damageType,
     canCrit,
     canMiss: true
@@ -224,7 +264,9 @@ function buildBloodiedItem(recipe, stats) {
  * attaques par l'une d'elles. Save DC pris dans la table.
  */
 function buildLegendaryActions(recipe, stats) {
-  const dc = stats.saveDC;
+  // « DC @dc » dans le texte est résolu par l'enricher, et le même jeton dans le
+  // nœud est résolu à l'activation : les deux restent d'accord à tout niveau.
+  const dc = recipe.useScalingRefs ? "@dc" : stats.saveDC;
   return [
     buildTaggedItem({
       name: "Rugissement terrible.", subtype: "action", icon: DEFAULT_FEATURE_ICONS.action,
@@ -420,10 +462,23 @@ export async function applyRecipe(actor, recipeInput) {
 
   // 2) Mettre à jour l'acteur (champs dérivés uniquement + flag recette).
   //    Le merge profond de Foundry préserve tout le reste (token, saves, mvt...).
+  //    Les PV suivent le même principe qu'un changement de niveau depuis la
+  //    fiche : le ratio est conservé, pour qu'un rééquilibrage en plein combat
+  //    ne rende pas au monstre les PV qu'on vient de lui prendre.
+  const system = buildSystemUpdate(recipe, stats);
+  const currentHp = actor.system?.attributes?.hp;
+  if (currentHp && system.attributes?.hp) {
+    system.attributes.hp = computeScaledHp({
+      currentValue: currentHp.value,
+      currentMax: currentHp.max,
+      newMax: system.attributes.hp.max
+    });
+  }
+
   await actor.update({
     name: recipe.name,
     img,
-    system: buildSystemUpdate(recipe, stats),
+    system,
     prototypeToken: { width: stats.tokenSize, height: stats.tokenSize },
     flags: recipeFlagData(recipe)
   });

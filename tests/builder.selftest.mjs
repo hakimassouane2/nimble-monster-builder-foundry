@@ -30,13 +30,13 @@ const weak = bySlot(npc.data.items, "attack:weak");
 const strong = bySlot(npc.data.items, "attack:strong");
 truthy("item faible présent", weak);
 truthy("item fort présent", strong);
-check("forte formule", strong.system.activation.effects[0].formula, "2d8+6");
-check("faible formule", weak.system.activation.effects[0].formula, "1d8+4");
+check("forte formule (référence)", strong.system.activation.effects[0].formula, "@strongDamage");
+check("faible formule (référence)", weak.system.activation.effects[0].formula, "@weakDamage");
 truthy("icône faible = grise", weak.img.includes("strike-sword-gray"));
 truthy("icône forte = rouge sang", strong.img.includes("strike-sword-blood-red"));
 check("forte damageType", strong.system.activation.effects[0].damageType, "slashing");
-truthy("forte a une description mentionnant les dégâts", strong.system.description.includes("2d8+6"));
-truthy("faible a une description mentionnant les dégâts", weak.system.description.includes("1d8+4"));
+truthy("forte a une description mentionnant les dégâts", strong.system.description.includes("@strongDamage"));
+truthy("faible a une description mentionnant les dégâts", weak.system.description.includes("@weakDamage"));
 truthy("item flag generated", strong.flags["nimble-monster-builder"].generated === true);
 // arbre d'effets
 const dmg = strong.system.activation.effects[0];
@@ -60,7 +60,7 @@ const min = recipeToCreateData(defaultRecipe({ monsterType: "minion", level: "2"
 check("minion hp.max", min.data.system.attributes.hp.max, 1);
 truthy("minion sans isFlunky", min.data.system.details.isFlunky === undefined);
 check("minion canCrit", min.data.items[0].system.activation.effects[0].canCrit, false);
-check("minion formule", min.data.items[0].system.activation.effects[0].formula, "1d4");
+check("minion formule (référence)", min.data.items[0].system.activation.effects[0].formula, "@attackDamage");
 
 // --- Solo ---
 const solo = recipeToCreateData(defaultRecipe({ monsterType: "soloMonster", level: "5", armor: "medium", size: "large", dieSize: 8 }));
@@ -88,6 +88,34 @@ check("scale npc niv3 +1", scaledLevel(defaultRecipe({ level: "3" }), 1), "4");
 check("scale npc borne basse", scaledLevel(defaultRecipe({ level: "1/4" }), -1), "1/4");
 check("scale solo niv5 +1", scaledLevel(defaultRecipe({ monsterType: "soloMonster", level: "5" }), 1), "6");
 check("scale solo borne haute", scaledLevel(defaultRecipe({ monsterType: "soloMonster", level: "20" }), 1), "20");
+
+// --- Mode valeurs figées (useScalingRefs: false) ---
+// Un monstre construit ainsi reste exact sans le module : c'est le repli si on
+// exporte le monstre ou si on désactive le scaling.
+const frozen = recipeToCreateData(defaultRecipe({
+  monsterType: "npc", name: "Gobelin figé", level: "3", armor: "medium", size: "small",
+  dieSize: 8, damageType: "slashing", useScalingRefs: false
+}));
+const frozenStrong = bySlot(frozen.data.items, "attack:strong");
+const frozenWeak = bySlot(frozen.data.items, "attack:weak");
+check("figé — forte formule", frozenStrong.system.activation.effects[0].formula, "2d8+6");
+check("figé — faible formule", frozenWeak.system.activation.effects[0].formula, "1d8+4");
+truthy("figé — description avec la moyenne", frozenStrong.system.description.includes("(15)"));
+truthy("figé — aucune référence résiduelle", !JSON.stringify(frozen.data).includes("@strongDamage"));
+
+// --- Références et DD sur un légendaire (réutilise `solo`, déjà en mode référence) ---
+truthy("légendaire — DD en référence dans le texte", roar.system.description.includes("DC @dc"));
+check("légendaire — DD en référence dans le nœud", roar.system.activation.effects[0].saveDC, "@dc");
+check(
+  "légendaire — grosse attaque en référence",
+  bySlot(solo.data.items, "attack:big").system.activation.effects[0].formula,
+  "@strongDamage",
+);
+
+const soloFrozen = recipeToCreateData(defaultRecipe({
+  monsterType: "soloMonster", level: "5", armor: "medium", legendaryActions: true, useScalingRefs: false
+}));
+check("légendaire figé — DD numérique", bySlot(soloFrozen.data.items, "legendary:roar").system.activation.effects[0].saveDC, 12);
 
 console.log(`\n${pass} OK, ${fail} KO`);
 process.exit(fail ? 1 : 0);

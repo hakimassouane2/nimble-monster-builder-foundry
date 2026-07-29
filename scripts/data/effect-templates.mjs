@@ -125,7 +125,9 @@ export const EFFECT_TEMPLATES = {
       const dmg = damageNode({ formula: ctx.strongFormula, damageType: dtype, canCrit: false, canMiss: false });
       const st = savingThrowNode({
         savingThrowType: save,
-        saveDC: stats.saveDC,
+        // Via le contexte, comme les autres gabarits : `stats.saveDC` court-circuitait
+        // la bascule référence/valeur figée.
+        saveDC: ctx.saveDC,
         sharedRolls: [dmg],
         failedSave: [damageOutcomeNode(dmg.id, "fullDamage", "failedSave")],
         passedSave: [damageOutcomeNode(dmg.id, "halfDamage", "passedSave")]
