@@ -9,8 +9,12 @@ import { STANDARD_TABLE, standardRowByLevel } from "../data/standard-table.mjs";
 import { LEGENDARY_TABLE } from "../data/legendary-table.mjs";
 import { rolePreset } from "../data/role-presets.mjs";
 import { suggestedMinionDie } from "../data/minion-dice.mjs";
+import { resolveAbilityOffsets } from "../data/effect-templates.mjs";
 
 export const RECIPE_SCHEMA_VERSION = 1;
+
+/** Amplitude maximale d'un ajustement manuel, en lignes de table. */
+export const MAX_MANUAL_ADJUST = 5;
 
 /** Recette par défaut (npc niveau 1, normal). */
 export function defaultRecipe(overrides = {}) {
@@ -33,8 +37,13 @@ export function defaultRecipe(overrides = {}) {
     attackType: "",             // "" (mêlée reach1) | "reach" | "range"
     distance: 1,                // en cases
     abilities: [],              // [{ templateId, params, payWith }] — rempli en P3
-    hpLineOffset: 0,            // décalage de lignes HP (mix & match + coût abilities)
-    dmgLineOffset: 0,           // décalage de lignes dégâts
+    hpLineOffset: 0,            // décalage de lignes HP imposé par le rôle (mix & match)
+    dmgLineOffset: 0,           // décalage de lignes dégâts imposé par le rôle
+    // Ajustement MANUEL du MJ, indépendant du rôle et des capacités : il permet
+    // de pré-payer du budget pour des capacités écrites à la main, sans changer
+    // le niveau affiché du monstre. Survit au changement de rôle.
+    hpAdjust: 0,
+    dmgAdjust: 0,
     // true  : les items générés portent des références (@strongDamage, @dc) et
     //         suivent donc le niveau du monstre sans être régénérés ;
     // false : valeurs figées, le monstre reste lisible sans le module.
@@ -72,6 +81,8 @@ export function normalizeRecipe(partial) {
   r.attackCount = Math.max(1, Math.round(Number(r.attackCount) || 1));
   r.hpLineOffset = Math.round(Number(r.hpLineOffset) || 0);
   r.dmgLineOffset = Math.round(Number(r.dmgLineOffset) || 0);
+  r.hpAdjust = clampAdjust(r.hpAdjust);
+  r.dmgAdjust = clampAdjust(r.dmgAdjust);
   r.distance = Math.max(1, Math.round(Number(r.distance) || 1));
   if (r.monsterType === "minion") r.isFlunky = false; // pas de flunky sur minion
   if (r.monsterType === "soloMonster") r.isFlunky = false;
@@ -79,6 +90,46 @@ export function normalizeRecipe(partial) {
   r.useScalingRefs = r.useScalingRefs !== false;
   if (!Array.isArray(r.abilities)) r.abilities = [];
   return r;
+}
+
+/** Ajustement manuel : entier borné à ±MAX_MANUAL_ADJUST lignes. */
+function clampAdjust(value) {
+  const n = Math.round(Number(value) || 0);
+  return Math.max(-MAX_MANUAL_ADJUST, Math.min(MAX_MANUAL_ADJUST, n));
+}
+
+/* --------------------------- Offsets de lignes -------------------------- */
+
+/**
+ * Somme des trois sources de décalage de lignes : le rôle (preset), l'ajustement
+ * manuel du MJ, et le coût des capacités. Point d'entrée unique — tout ce qui
+ * dérive des stats doit passer par là, sinon une source serait oubliée.
+ *
+ * Tolérant aux recettes brutes (non normalisées) lues depuis les flags.
+ *
+ * @param {object|null} recipe
+ * @returns {{hpLineOffset:number, dmgLineOffset:number, levelBump:number,
+ *            parts:{role:{hp:number,dmg:number}, manual:{hp:number,dmg:number},
+ *                   abilities:{hp:number,dmg:number}}}}
+ */
+export function resolveLineOffsets(recipe) {
+  const ability = recipe
+    ? resolveAbilityOffsets(recipe)
+    : { hpDelta: 0, dmgDelta: 0, levelBump: 0 };
+  const role = {
+    hp: Math.round(Number(recipe?.hpLineOffset) || 0),
+    dmg: Math.round(Number(recipe?.dmgLineOffset) || 0)
+  };
+  const manual = {
+    hp: clampAdjust(recipe?.hpAdjust),
+    dmg: clampAdjust(recipe?.dmgAdjust)
+  };
+  return {
+    hpLineOffset: role.hp + manual.hp + ability.hpDelta,
+    dmgLineOffset: role.dmg + manual.dmg + ability.dmgDelta,
+    levelBump: ability.levelBump,
+    parts: { role, manual, abilities: { hp: ability.hpDelta, dmg: ability.dmgDelta } }
+  };
 }
 
 /* ------------------------ Lecture / écriture flags ---------------------- */

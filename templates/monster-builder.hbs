@@ -103,6 +103,19 @@
       <label><input type="checkbox" name="legendaryActions" {{#if recipe.legendaryActions}}checked{{/if}}> {{localize "NMB.Field.legendaryActions"}}</label>
     </div>
     {{/if}}
+
+    {{!-- Ajustement manuel : pré-payer du budget sans changer le niveau --}}
+    <p class="nmb-adjust-hint">{{localize "NMB.Field.adjustHint"}}</p>
+    <div class="nmb-grid2">
+      <div class="nmb-field">
+        <label>{{localize "NMB.Field.hpAdjust"}}</label>
+        <input type="number" name="hpAdjust" step="1" min="-{{adjustMax}}" max="{{adjustMax}}" value="{{recipe.hpAdjust}}">
+      </div>
+      <div class="nmb-field">
+        <label>{{localize "NMB.Field.dmgAdjust"}}</label>
+        <input type="number" name="dmgAdjust" step="1" min="-{{adjustMax}}" max="{{adjustMax}}" value="{{recipe.dmgAdjust}}">
+      </div>
+    </div>
   </section>
 
   {{!-- Colonne aperçu --}}
@@ -118,7 +131,20 @@
     <ul class="nmb-attacks">
       {{#each attacksView}}<li><strong>{{label}}</strong> · {{formula}} ({{avg}})</li>{{/each}}
     </ul>
-    {{#if costSummary}}<p class="nmb-cost-summary">{{costSummary}}</p>{{/if}}
+    {{#if budgetLines.length}}
+      <div class="nmb-budget">
+        <div class="nmb-budget-title">{{localize "NMB.Budget.title"}}</div>
+        {{#each budgetLines}}
+        <div class="nmb-budget-line">
+          <span class="nmb-budget-label">{{label}}</span>
+          <span class="nmb-budget-detail">{{detail}}</span>
+          <b class="nmb-budget-total">{{total}}</b>
+        </div>
+        {{/each}}
+      </div>
+    {{else}}
+      <p class="nmb-cost-summary">{{localize "NMB.Budget.none"}}</p>
+    {{/if}}
     {{#if warnings.length}}
       <ul class="nmb-warnings">{{#each warnings}}<li><i class="fa-solid fa-triangle-exclamation"></i> {{this}}</li>{{/each}}</ul>
     {{/if}}

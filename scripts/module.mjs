@@ -12,7 +12,9 @@ import { ROLE_PRESETS } from "./data/role-presets.mjs";
 import {
   recipeToCreateData, createMonster, applyRecipe, scaleMonster, deriveResolved
 } from "./core/builder.mjs";
-import { defaultRecipe, recipeFromRole, normalizeRecipe, readRecipe } from "./core/recipe.mjs";
+import {
+  defaultRecipe, recipeFromRole, normalizeRecipe, readRecipe, resolveLineOffsets
+} from "./core/recipe.mjs";
 import { EFFECT_TEMPLATES, TEMPLATE_ORDER, getTemplate, resolveAbilityOffsets } from "./data/effect-templates.mjs";
 import { MonsterBuilderApp } from "./apps/monster-builder-app.mjs";
 import { MONSTER_TYPES } from "./data/constants.mjs";
@@ -53,6 +55,7 @@ Hooks.once("ready", () => {
       recipeFromRole,
       normalizeRecipe,
       readRecipe,
+      resolveLineOffsets,
       // builder
       recipeToCreateData,
       createMonster,

@@ -20,7 +20,7 @@ import { MODULE_ID, FLAGS, ARMOR_HP_COLUMN } from "../data/constants.mjs";
 import { STANDARD_TABLE, standardRowByLevel, standardRowByOrder } from "../data/standard-table.mjs";
 import { LEGENDARY_TABLE, legendaryRowByLevel } from "../data/legendary-table.mjs";
 import { suggestedMinionDie } from "../data/minion-dice.mjs";
-import { resolveAbilityOffsets } from "../data/effect-templates.mjs";
+import { resolveLineOffsets } from "./recipe.mjs";
 import { realizeFormula, buildFormula, averageOfFormula } from "./formula.mjs";
 
 /** Décalages de ligne exposés de part et d'autre de la ligne courante. */
@@ -267,7 +267,7 @@ export function scalingInputFromActor(actor) {
   const system = actor?.system ?? {};
   const recipe = actor?.getFlag?.(MODULE_ID, FLAGS.RECIPE) ?? null;
   const flagDie = Number(actor?.getFlag?.(MODULE_ID, "dieSize")) || 0;
-  const abilityOffsets = recipe ? resolveAbilityOffsets(recipe) : { hpDelta: 0, dmgDelta: 0 };
+  const offsets = resolveLineOffsets(recipe);
 
   return {
     monsterType: actor?.type ?? "npc",
@@ -275,13 +275,14 @@ export function scalingInputFromActor(actor) {
     armor: system.attributes?.armor ?? "none",
     // Priorité au dé posé à la main sur l'acteur, puis à celui de la recette.
     dieSize: flagDie || Number(recipe?.dieSize) || 0,
-    // Décalages issus du rôle ET du coût des capacités, combinés exactement
-    // comme le fait `deriveResolved` du builder : le coût des capacités n'est
-    // pas stocké dans la recette, il se recalcule depuis la liste d'abilities.
-    // Sans cette addition, une capacité payée en dégâts serait gratuite au jet.
-    // Absents pour un monstre sans recette, qui suit alors sa ligne de niveau.
-    hpLineOffset: (Number(recipe?.hpLineOffset) || 0) + abilityOffsets.hpDelta,
-    dmgLineOffset: (Number(recipe?.dmgLineOffset) || 0) + abilityOffsets.dmgDelta,
+    // Décalages issus du rôle, de l'ajustement manuel ET du coût des capacités,
+    // combinés exactement comme le fait `deriveResolved` du builder : le coût
+    // des capacités n'est pas stocké dans la recette, il se recalcule depuis la
+    // liste d'abilities. Sans cette addition, une capacité payée en dégâts
+    // serait gratuite au jet. Nuls pour un monstre sans recette, qui suit alors
+    // sa ligne de niveau.
+    hpLineOffset: offsets.hpLineOffset,
+    dmgLineOffset: offsets.dmgLineOffset,
     hpMax: system.attributes?.hp?.max
   };
 }

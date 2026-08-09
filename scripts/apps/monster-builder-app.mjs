@@ -8,8 +8,11 @@ import {
   MONSTER_TYPES, ARMOR_TYPES, SIZE_CATEGORIES, DIE_SIZES, DAMAGE_TYPES as DMG_KEYS
 } from "../data/constants.mjs";
 import { ROLE_ORDER, ROLE_PRESETS } from "../data/role-presets.mjs";
-import { TEMPLATE_ORDER, getTemplate, resolveAbilityOffsets } from "../data/effect-templates.mjs";
-import { defaultRecipe, recipeFromRole, normalizeRecipe, readRecipe, scaledLevel } from "../core/recipe.mjs";
+import { TEMPLATE_ORDER, getTemplate } from "../data/effect-templates.mjs";
+import {
+  defaultRecipe, recipeFromRole, normalizeRecipe, readRecipe, scaledLevel,
+  resolveLineOffsets, MAX_MANUAL_ADJUST
+} from "../core/recipe.mjs";
 import { scalingRefsEnabled } from "../features/level-scaling.mjs";
 import { deriveResolved, createMonster, applyRecipe } from "../core/builder.mjs";
 import { STANDARD_TABLE } from "../data/standard-table.mjs";
@@ -73,7 +76,6 @@ export class MonsterBuilderApp extends HandlebarsApplicationMixin(ApplicationV2)
   async _prepareContext() {
     const recipe = this.recipe;
     const stats = deriveResolved(recipe);
-    const cost = resolveAbilityOffsets(recipe);
     const isNpc = recipe.monsterType === "npc";
 
     // Capacités ACTIVES uniquement (dans l'ordre de la recette), + liste des
@@ -111,10 +113,15 @@ export class MonsterBuilderApp extends HandlebarsApplicationMixin(ApplicationV2)
       .map((id) => ({ value: id, label: L(getTemplate(id).labelKey) }))
       .sort((a, b) => a.label.localeCompare(b.label, game.i18n.lang));
 
-    const costParts = [];
-    if (cost.dmgDelta) costParts.push(game.i18n.format("NMB.CostDmg", { n: -cost.dmgDelta }));
-    if (cost.hpDelta) costParts.push(game.i18n.format("NMB.CostHp", { n: -cost.hpDelta }));
-    if (cost.levelBump) costParts.push(game.i18n.format("NMB.CostLevel", { n: cost.levelBump }));
+    // Budget de lignes : d'où vient chaque décalage (rôle / manuel / capacités).
+    const off = resolveLineOffsets(recipe);
+    const budgetLines = [
+      budgetLine(LB("NMB.Pay", "hp"), off.parts.role.hp, off.parts.manual.hp, off.parts.abilities.hp),
+      budgetLine(LB("NMB.Pay", "dmg"), off.parts.role.dmg, off.parts.manual.dmg, off.parts.abilities.dmg)
+    ].filter(Boolean);
+    if (off.levelBump) {
+      budgetLines.push({ label: LB("NMB.Pay", "level"), detail: "", total: game.i18n.format("NMB.CostLevel", { n: off.levelBump }) });
+    }
 
     return {
       recipe,
@@ -128,7 +135,8 @@ export class MonsterBuilderApp extends HandlebarsApplicationMixin(ApplicationV2)
       buildLabel: this.actor ? L("NMB.Apply") : L("NMB.Create"),
       activeAbilities,
       availableAbilities,
-      costSummary: costParts.length ? `${L("NMB.CostSummaryPrefix")} : ${costParts.join(", ")}.` : "",
+      budgetLines,
+      adjustMax: MAX_MANUAL_ADJUST,
       warnings: stats.warnings ?? [],
       armorLabel: LB("NMB.Armor", stats.armor),
       sizeLabel: LB("NMB.Size", stats.sizeCategory),
@@ -161,8 +169,11 @@ export class MonsterBuilderApp extends HandlebarsApplicationMixin(ApplicationV2)
         size: e.size ?? prev.size,
         damageType: e.damageType ?? prev.damageType,
         creatureType: e.creatureType ?? prev.creatureType,
-        // Le preset de rôle ne doit pas décider à la place de l'utilisateur.
-        useScalingRefs: prev.useScalingRefs
+        // Le preset de rôle ne doit pas décider à la place de l'utilisateur :
+        // ni du mode de scaling, ni des ajustements manuels qu'il a posés.
+        useScalingRefs: prev.useScalingRefs,
+        hpAdjust: e.hpAdjust ?? prev.hpAdjust,
+        dmgAdjust: e.dmgAdjust ?? prev.dmgAdjust
       }));
     }
 
@@ -178,6 +189,9 @@ export class MonsterBuilderApp extends HandlebarsApplicationMixin(ApplicationV2)
     r.attackType = e.attackType ?? "";
     r.distance = Number(e.distance) || 1;
     r.damageType = e.damageType ?? r.damageType;
+    // Champ vide = 0 : `Number("")` vaut 0, mais `undefined` doit garder l'ancien.
+    r.hpAdjust = e.hpAdjust === undefined ? r.hpAdjust : Number(e.hpAdjust) || 0;
+    r.dmgAdjust = e.dmgAdjust === undefined ? r.dmgAdjust : Number(e.dmgAdjust) || 0;
     r.creatureType = e.creatureType ?? "";
     r.isFlunky = Boolean(e.isFlunky);
     if (r.monsterType === "soloMonster") r.legendaryActions = Boolean(e.legendaryActions);
@@ -237,6 +251,29 @@ export class MonsterBuilderApp extends HandlebarsApplicationMixin(ApplicationV2)
     }
     this.render();
   }
+}
+
+/** Nombre signé, avec le vrai signe moins typographique. */
+function signed(n) {
+  return `${n > 0 ? "+" : "−"}${Math.abs(n)}`;
+}
+
+/**
+ * Une ligne du budget : « PV −1 rôle · −1 manuel · −1 capacités = −3 ».
+ * Retourne null si aucune source ne décale cette stat.
+ */
+function budgetLine(label, role, manual, abilities) {
+  const total = role + manual + abilities;
+  if (!role && !manual && !abilities) return null;
+  const bits = [];
+  if (role) bits.push(`${signed(role)} ${L("NMB.Budget.role")}`);
+  if (manual) bits.push(`${signed(manual)} ${L("NMB.Budget.manual")}`);
+  if (abilities) bits.push(`${signed(abilities)} ${L("NMB.Budget.abilities")}`);
+  return {
+    label,
+    detail: bits.join(" · "),
+    total: game.i18n.format("NMB.Budget.total", { n: signed(total) })
+  };
 }
 
 /** Convertit les params du formulaire selon le type déclaré du gabarit. */

@@ -1,7 +1,7 @@
 // Test P3 : catalogue d'effets + coût. node tests/abilities.selftest.mjs
 import { scalingRefsForActor } from "../scripts/core/scaling.mjs";
 import { recipeToCreateData } from "../scripts/core/builder.mjs";
-import { defaultRecipe } from "../scripts/core/recipe.mjs";
+import { defaultRecipe, normalizeRecipe, resolveLineOffsets } from "../scripts/core/recipe.mjs";
 import { resolveAbilityOffsets } from "../scripts/data/effect-templates.mjs";
 
 let pass = 0, fail = 0;
@@ -101,6 +101,38 @@ const r5 = defaultRecipe({ monsterType: "npc", level: "3", armor: "medium", dieS
   abilities: [{ templateId: "push", params: {}, payWith: "level" }] });
 check("payWith level — offsets nuls", resolveAbilityOffsets(r5), { hpDelta: 0, dmgDelta: 0, levelBump: 1 });
 check("payWith level — HP inchangé (33)", recipeToCreateData(r5).data.system.attributes.hp.max, 33);
+
+// --- Ajustement manuel : baisser un levier SANS capacité, niveau inchangé ---
+const r6 = defaultRecipe({ monsterType: "npc", level: "3", armor: "medium", dieSize: 8,
+  dmgAdjust: -1, useScalingRefs: false });
+const d6 = recipeToCreateData(r6).data;
+check("manuel dmg -1 : niveau affiché inchangé", d6.system.details.level, "3");
+check("manuel dmg -1 : HP inchangés (33)", d6.system.attributes.hp.max, 33);
+check("manuel dmg -1 : faible = 1d8+3", eff(bySlot(d6.items, "attack:weak"))[0].formula, "1d8+3");
+check("manuel dmg -1 : forte = 2d8+4", eff(bySlot(d6.items, "attack:strong"))[0].formula, "2d8+4");
+
+const r7 = defaultRecipe({ monsterType: "npc", level: "3", armor: "medium", dieSize: 8, hpAdjust: -1 });
+check("manuel hp -1 : HP 27", recipeToCreateData(r7).data.system.attributes.hp.max, 27);
+
+// Les trois sources se cumulent : rôle + manuel + capacités.
+const r8 = defaultRecipe({ monsterType: "npc", level: "3", armor: "medium", dieSize: 8,
+  hpLineOffset: -1, hpAdjust: -1, dmgLineOffset: 1, dmgAdjust: -2,
+  abilities: [{ templateId: "grapple", params: {}, payWith: "hp" }] });
+check("cumul rôle+manuel+capacités", (({ hpLineOffset, dmgLineOffset }) => ({ hpLineOffset, dmgLineOffset }))(resolveLineOffsets(r8)),
+  { hpLineOffset: -3, dmgLineOffset: -1 });
+
+// Bornage : un ajustement absurde est ramené à ±MAX_MANUAL_ADJUST.
+check("ajustement borné bas", normalizeRecipe({ hpAdjust: -12 }).hpAdjust, -5);
+check("ajustement borné haut", normalizeRecipe({ dmgAdjust: 99 }).dmgAdjust, 5);
+
+// Les références résolues au jet doivent voir l'ajustement manuel, sinon un
+// monstre évolutif ignorerait le budget pré-payé.
+const fakeActor2 = {
+  type: "npc",
+  system: { details: { level: "3" }, attributes: { armor: "medium", hp: { max: 33 } } },
+  getFlag: (scope, key) => (scope === "nimble-monster-builder" && key === "recipe" ? r6 : undefined)
+};
+check("référence forte suit l'ajustement manuel", scalingRefsForActor(fakeActor2).strongDamage, "2d8+4");
 
 console.log(`\n${pass} OK, ${fail} KO`);
 process.exit(fail ? 1 : 0);

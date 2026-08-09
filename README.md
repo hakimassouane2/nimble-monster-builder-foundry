@@ -10,6 +10,7 @@ Module Foundry VTT (v13) pour le système **Nimble** : construis et **scale** de
 - **3 types de monstres** : PNJ standard, Minion (PV 1, jamais de crit), Légendaire/Solo (phases **Ensanglanté** + **Dernier sursaut**, 2 attaques Petite/Grosse, 4 actions légendaires optionnelles).
 - **Catalogue de capacités cochables** : Pousse, Renverse, Agrippe, condition au toucher/critique, dégâts bonus sur dégâts, souffle en cône (save), invocation de minions, variante à distance, Bouclier de chair, résistances/immunités/vulnérabilités, allonge…
 - **Comptabilité de coût automatique** : chaque capacité coûte une ligne de PV, de dégâts, ou +1 niveau (règle Nimble), appliquée en direct.
+- **Ajustement manuel des leviers** : champs *Ajuster PV* / *Ajuster dégâts* pour descendre (ou monter) de N lignes **sans changer le niveau du monstre** — de quoi pré-payer les capacités que tu écris toi-même. L'aperçu détaille le budget : ce qui vient du rôle, du manuel et des capacités.
 - **Presets de rôle** : Frappeur, Défenseur, Contrôleur, etc. appliquent des défauts surchargeables (+ un mode « Monstre normal » neutre).
 - **Descriptions façon 5e** : Save DC et moyenne de dégâts `(N)` (arrondie à l'inférieur) dans le statblock et chaque attaque.
 - **Interface complète** (ApplicationV2) avec aperçu live, et **i18n FR / EN**.

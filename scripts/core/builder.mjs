@@ -9,11 +9,11 @@
 
 import { MODULE_ID, FLAGS, DEFAULT_FEATURE_ICONS, ATTACK_ICONS, SAVE_STATS } from "../data/constants.mjs";
 import { damageLabelFR, rangeSuffixFR, fmtAverage } from "../data/labels.mjs";
-import { getTemplate, resolveAbilityOffsets } from "../data/effect-templates.mjs";
+import { getTemplate } from "../data/effect-templates.mjs";
 import { deriveStats } from "./derive.mjs";
 import { damageNode, assembleEffects, savingThrowNode, conditionNode, textNode } from "./effect-tree.mjs";
 import { buildStatblock } from "./statblock.mjs";
-import { normalizeRecipe, recipeFlagData, scaledLevel } from "./recipe.mjs";
+import { normalizeRecipe, recipeFlagData, scaledLevel, resolveLineOffsets } from "./recipe.mjs";
 import { computeScaledHp } from "./scaling.mjs";
 import { randomID } from "./ids.mjs";
 
@@ -325,15 +325,16 @@ export function buildGeneratedItems(recipe, stats) {
 }
 
 /**
- * Dérive les stats en tenant compte du COÛT des abilities (offsets de lignes).
+ * Dérive les stats en tenant compte de TOUS les décalages de lignes : rôle,
+ * ajustement manuel du MJ et coût des abilities.
  * C'est le point d'entrée à utiliser pour construire un acteur.
  */
 export function deriveResolved(recipe) {
-  const off = resolveAbilityOffsets(recipe);
+  const off = resolveLineOffsets(recipe);
   return deriveStats({
     ...recipe,
-    hpLineOffset: (recipe.hpLineOffset || 0) + off.hpDelta,
-    dmgLineOffset: (recipe.dmgLineOffset || 0) + off.dmgDelta
+    hpLineOffset: off.hpLineOffset,
+    dmgLineOffset: off.dmgLineOffset
   });
 }
 
