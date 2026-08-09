@@ -246,12 +246,17 @@ function legendaryFormula(target, dieSize) {
 
 function commonRefs(saveDC, input) {
   const hpMax = Number(input?.hpMax);
+  const name = String(input?.name ?? "").trim();
   return {
     dc: saveDC,
     saveDC,
     dcEasy: saveDC - 2,
     dcHard: saveDC + 2,
-    ...(Number.isFinite(hpMax) ? { hpMax } : {})
+    ...(Number.isFinite(hpMax) ? { hpMax } : {}),
+    // Le nom sert à se citer dans une description (« @name se rue sur… »). Absent
+    // du calcul pur, la clé est simplement omise : l'enricher rend alors « @name »
+    // tel quel, ce qui vaut mieux qu'un trou dans la phrase.
+    ...(name ? { name } : {})
   };
 }
 
@@ -271,6 +276,7 @@ export function scalingInputFromActor(actor) {
 
   return {
     monsterType: actor?.type ?? "npc",
+    name: actor?.name ?? "",
     level: system.details?.level ?? "1",
     armor: system.attributes?.armor ?? "none",
     // Priorité au dé posé à la main sur l'acteur, puis à celui de la recette.
@@ -335,8 +341,13 @@ export function computeScaledHp({ currentValue, currentMax, newMax }) {
  */
 export function scalingRefKeys() {
   const keys = new Set();
+  // Sonde volontairement RENSEIGNÉE : certaines clés (name, hpMax) n'existent
+  // que si l'acteur fournit la donnée. Sans ces valeurs factices elles
+  // manqueraient au motif, et « @name » resterait littéral dans les
+  // descriptions alors qu'il se résout très bien dans les formules.
+  const probe = { level: "1", name: "?", hpMax: 1 };
   for (const monsterType of ["npc", "minion", "soloMonster"]) {
-    for (const key of Object.keys(scalingRefs({ monsterType, level: "1" }))) keys.add(key);
+    for (const key of Object.keys(scalingRefs({ ...probe, monsterType }))) keys.add(key);
   }
   return [...keys].sort((a, b) => b.length - a.length || a.localeCompare(b));
 }

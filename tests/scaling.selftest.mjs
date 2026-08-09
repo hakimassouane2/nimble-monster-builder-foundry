@@ -109,6 +109,15 @@ check("motif — clé inconnue ignorée", found("@inconnu"), []);
 check("motif — adresse mail épargnée", found("contact@exemple.fr"), []);
 check("motif — @dc collé à du texte non capturé", found("@dcXYZ"), []);
 
+// --- Nom de l'acteur ---
+// La clé est conditionnelle : elle doit tout de même figurer dans le motif,
+// sans quoi « @name » resterait littéral dans les descriptions.
+check("motif — @name reconnu", found("@name se rue sur sa proie"), ["@name"]);
+check("@name absent quand l'acteur n'a pas de nom", scalingRefs({ monsterType: "npc", level: "1" }).name, undefined);
+check("@name repris de la sonde", scalingRefs({ monsterType: "npc", level: "1", name: "Gobelin" }).name, "Gobelin");
+check("@name sur un minion", scalingRefs({ monsterType: "minion", level: "1", name: "Rat" }).name, "Rat");
+check("@name sur un légendaire", scalingRefs({ monsterType: "soloMonster", level: "1", name: "Dragon" }).name, "Dragon");
+
 // --- Recalcul des PV au changement de niveau (ratio conservé) ---
 check("PV : monstre intact reste au maximum", computeScaledHp({ currentValue: 26, currentMax: 26, newMax: 58 }), { max: 58, value: 58 });
 check("PV : ratio conservé à la montée", computeScaledHp({ currentValue: 13, currentMax: 26, newMax: 58 }), { max: 58, value: 29 });
