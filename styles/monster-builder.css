@@ -115,3 +115,33 @@
   border-bottom: 1px dotted currentColor;
   cursor: help;
 }
+
+/* Référence de dégâts : la formule se lance au clic. Traitée comme un jet
+   inline de Foundry (fond discret, dé en préfixe) pour que le geste soit
+   reconnaissable sans apprendre une convention propre au module. */
+.nimble-scaling-ref--roll {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+  cursor: pointer;
+  padding: 0 3px;
+  white-space: nowrap;
+}
+
+.nimble-scaling-ref--roll:hover {
+  background: rgba(0, 0, 0, 0.1);
+  text-shadow: 0 0 6px var(--color-shadow-primary, #ff0000);
+}
+
+.nimble-scaling-ref--roll > i {
+  margin-right: 0.25em;
+}
+
+@media (prefers-color-scheme: dark) {
+  .nimble-scaling-ref--roll {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+
+  .nimble-scaling-ref--roll:hover { background: rgba(255, 255, 255, 0.16); }
+}

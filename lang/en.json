@@ -112,5 +112,11 @@
   "NMB.Settings.rescaleHp.name": "Rescale hit points on level change",
   "NMB.Settings.rescaleHp.hint": "When a monster's level changes, its maximum hit points are read from the table and its current hit points keep the same ratio. Uncheck to adjust hit points by hand.",
   "NMB.Settings.scalingRefs.name": "Build scaling monsters",
-  "NMB.Settings.scalingRefs.hint": "Built monsters carry references (@strongDamage, @dc) instead of frozen values, so they follow their level without being rebuilt. Monsters created this way need this module to be played."
+  "NMB.Settings.scalingRefs.hint": "Built monsters carry references (@strongDamage, @dc) instead of frozen values, so they follow their level without being rebuilt. Monsters created this way need this module to be played.",
+  "NMB.Settings.clickToRoll.name": "Click to roll damage",
+  "NMB.Settings.clickToRoll.hint": "In descriptions, damage references (@strongDamage, @weakDamage…) display their formula as a button: clicking rolls the dice, criticals and misses included. Uncheck to keep plain text.",
+  "NMB.ScalingRoll.tooltip": "Roll {formula} (@{key})",
+  "NMB.ScalingRoll.critical": "Critical!",
+  "NMB.ScalingRoll.miss": "Miss!",
+  "NMB.ScalingRoll.failed": "Could not roll \"{formula}\"."
 }

@@ -13,6 +13,7 @@ Module Foundry VTT (v13) pour le système **Nimble** : construis et **scale** de
 - **Ajustement manuel des leviers** : champs *Ajuster PV* / *Ajuster dégâts* pour descendre (ou monter) de N lignes **sans changer le niveau du monstre** — de quoi pré-payer les capacités que tu écris toi-même. L'aperçu détaille le budget : ce qui vient du rôle, du manuel et des capacités.
 - **Presets de rôle** : Frappeur, Défenseur, Contrôleur, etc. appliquent des défauts surchargeables (+ un mode « Monstre normal » neutre).
 - **Descriptions façon 5e** : Save DC et moyenne de dégâts `(N)` (arrondie à l'inférieur) dans le statblock et chaque attaque.
+- **Références évolutives** : `@strongDamage`, `@weakDamage`, `@dc`… écrites dans une formule ou une description se résolvent **au moment du jet**, selon le niveau courant du monstre. Dans les descriptions, les références de dégâts deviennent des **boutons cliquables** qui lancent la formule.
 - **Interface complète** (ApplicationV2) avec aperçu live, et **i18n FR / EN**.
 
 ## Installation
@@ -24,6 +25,12 @@ Le dossier `nimble-monster-builder` se place dans `Data/modules/` de Foundry. Ac
 - **Créer un monstre** : onglet *Acteurs* → bouton **« 🐉 Constructeur de monstre »** en haut. Règle les champs, coche des capacités, clique **Créer**.
 - **Éditer / scaler un monstre existant** : **clic droit** sur l'acteur dans la liste → **« Nimble Monster Builder »**. Utilise les boutons **Niveau −/+** pour scaler, puis **Appliquer**.
 - Les items générés par le module sont marqués `flags.nimble-monster-builder.generated = true`. Un re-build les supprime et les régénère ; **tout item que tu ajoutes toi-même reste intact**.
+
+### Références évolutives
+
+Écris `@strongDamage` (ou `@weakDamage`, `@strongDamagePlus2`, `@dc`, `@level`, `@name`…) dans le champ formule d'une capacité **ou dans son texte de description** : la valeur est calculée depuis le niveau, l'armure et le dé du monstre porteur. La source n'est jamais réécrite, donc la même capacité reste réutilisable d'un monstre à l'autre.
+
+Dans une description, une référence qui donne une **formule de dés** est rendue comme un bouton : un clic la lance et poste le résultat au chat, avec les mêmes règles que l'activation de la capacité (critique et échec sur le dé principal ; un minion ne critique pas, une capacité de zone ne fait ni l'un ni l'autre). Les références numériques (`@dc`, `@strongDamageAvg`) restent du texte. Réglage client **« Lancer les dégâts au clic »** pour revenir au texte simple.
 
 ## API console
 
@@ -61,6 +68,8 @@ Le **scaling re-dérivé** repose sur une *recette* stockée dans `actor.flags.n
 node tests/math.selftest.mjs       # maths budget↔formule, tables
 node tests/builder.selftest.mjs    # assemblage acteur, items, scale
 node tests/abilities.selftest.mjs  # catalogue d'effets + coût
+node tests/scaling.selftest.mjs    # références évolutives, recalcul des PV
+node tests/roll.selftest.mjs       # ce qui est jouable au clic, règles crit/échec
 ```
 
 ## Crédits

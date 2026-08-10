@@ -21,6 +21,7 @@ import { MONSTER_TYPES } from "./data/constants.mjs";
 import { scalingRefs, scalingRefsForActor, scalingInputFromActor, scalingRefKeys } from "./core/scaling.mjs";
 import { registerScalingRefs } from "./features/scaling-refs.mjs";
 import { registerScalingEnricher, resolveScalingRef } from "./features/scaling-enricher.mjs";
+import { registerScalingRollClicks, rollFromAnchor, clickToRollEnabled } from "./features/scaling-roll.mjs";
 import {
   registerLevelScaling, computeScaledHp, scaledHpForLevel, scalingRefsEnabled
 } from "./features/level-scaling.mjs";
@@ -31,6 +32,9 @@ Hooks.once("init", () => {
   // Réglages et hook de document : aucune dépendance au système, et Foundry
   // attend que les settings soient déclarés dès l'init.
   registerLevelScaling();
+  // Délégation sur document.body, à la manière des jets inline de Foundry :
+  // posée une fois, elle couvre tout HTML enrichi présent ou à venir.
+  registerScalingRollClicks();
 });
 
 // L'enveloppe doit être posée APRÈS que le système ait installé sa classe
@@ -67,7 +71,8 @@ Hooks.once("ready", () => {
       // références de scaling (@strongDamage, @dc, @level...)
       scaling: {
         scalingRefs, scalingRefsForActor, scalingInputFromActor, scalingRefKeys,
-        resolveScalingRef, computeScaledHp, scaledHpForLevel, scalingRefsEnabled
+        resolveScalingRef, computeScaledHp, scaledHpForLevel, scalingRefsEnabled,
+        rollFromAnchor, clickToRollEnabled
       },
       // UI
       MonsterBuilderApp,

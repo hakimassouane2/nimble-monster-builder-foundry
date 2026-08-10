@@ -112,5 +112,11 @@
   "NMB.Settings.rescaleHp.name": "Recalculer les PV au changement de niveau",
   "NMB.Settings.rescaleHp.hint": "Quand le niveau d'un monstre change, ses PV maximum sont repris dans la table et ses PV courants conservent le même ratio. Décocher pour ajuster les PV à la main.",
   "NMB.Settings.scalingRefs.name": "Générer des monstres évolutifs",
-  "NMB.Settings.scalingRefs.hint": "Les monstres construits portent des références (@strongDamage, @dc) au lieu de valeurs figées : ils suivent leur niveau sans être reconstruits. Les monstres ainsi créés ont besoin de ce module pour être joués."
+  "NMB.Settings.scalingRefs.hint": "Les monstres construits portent des références (@strongDamage, @dc) au lieu de valeurs figées : ils suivent leur niveau sans être reconstruits. Les monstres ainsi créés ont besoin de ce module pour être joués.",
+  "NMB.Settings.clickToRoll.name": "Lancer les dégâts au clic",
+  "NMB.Settings.clickToRoll.hint": "Dans les descriptions, les références de dégâts (@strongDamage, @weakDamage…) affichent leur formule sous forme de bouton : un clic lance les dés, critique et échec compris. Décocher pour ne garder que le texte.",
+  "NMB.ScalingRoll.tooltip": "Lancer {formula} (@{key})",
+  "NMB.ScalingRoll.critical": "Critique !",
+  "NMB.ScalingRoll.miss": "Raté !",
+  "NMB.ScalingRoll.failed": "Impossible de lancer « {formula} »."
 }
